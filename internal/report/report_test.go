@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pradumnasaraf/agent-pr-guard/internal/rules"
+	"github.com/pradumnasaraf/agent-pr-police/internal/rules"
 )
 
 func TestBuildContainsMarker(t *testing.T) {

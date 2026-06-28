@@ -16,9 +16,9 @@
 
 ## 💥 How to Contribute
 
-- Look at the existing [**Issues**](https://github.com/Pradumnasaraf/agent-pr-guard/issues) or [**create a new issue**](https://github.com/Pradumnasaraf/agent-pr-guard/issues/new/choose)!
-- [**Fork the Repo**](https://github.com/Pradumnasaraf/agent-pr-guard/fork). Then, create a branch for any issue that you are working on. Finally, commit your work.
-- Create a **[Pull Request](https://github.com/Pradumnasaraf/agent-pr-guard/compare)** (_PR_), which will be promptly reviewed and given suggestions for improvements by the community.
+- Look at the existing [**Issues**](https://github.com/Pradumnasaraf/agent-pr-police/issues) or [**create a new issue**](https://github.com/Pradumnasaraf/agent-pr-police/issues/new/choose)!
+- [**Fork the Repo**](https://github.com/Pradumnasaraf/agent-pr-police/fork). Then, create a branch for any issue that you are working on. Finally, commit your work.
+- Create a **[Pull Request](https://github.com/Pradumnasaraf/agent-pr-police/compare)** (_PR_), which will be promptly reviewed and given suggestions for improvements by the community.
 - Add screenshots or screen captures to your Pull Request to help us understand the effects of the changes proposed in your PR.
 
 ## 🧪 Local Development
@@ -37,8 +37,8 @@ gofmt -l .
 go vet ./...
 
 # Scan local files without any GitHub calls (great for trying out rules)
-go run ./cmd/agent-pr-guard scan examples/insecure.Dockerfile
-go run ./cmd/agent-pr-guard scan examples/safe.Dockerfile
+go run ./cmd/agent-pr-police scan examples/insecure.Dockerfile
+go run ./cmd/agent-pr-police scan examples/safe.Dockerfile
 ```
 
 Please make sure `go build ./...`, `go vet ./...`, `go test ./...`, and `gofmt` all pass before opening a PR.

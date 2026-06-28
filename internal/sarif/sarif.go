@@ -5,14 +5,14 @@ package sarif
 import (
 	"encoding/json"
 
-	"github.com/pradumnasaraf/agent-pr-guard/internal/rules"
+	"github.com/pradumnasaraf/agent-pr-police/internal/rules"
 )
 
 const (
-	toolName           = "agent-pr-guard"
-	informationURI     = "https://github.com/pradumnasaraf/agent-pr-guard"
+	toolName           = "agent-pr-police"
+	informationURI     = "https://github.com/pradumnasaraf/agent-pr-police"
 	schemaURI          = "https://json.schemastore.org/sarif-2.1.0.json"
-	helpURIBase        = "https://github.com/pradumnasaraf/agent-pr-guard#rules"
+	helpURIBase        = "https://github.com/pradumnasaraf/agent-pr-police#rules"
 	sarifSchemaVersion = "2.1.0"
 )
 

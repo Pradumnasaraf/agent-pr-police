@@ -46,7 +46,7 @@ inputs:
   sarif-file:
     description: 'Path to write the SARIF 2.1.0 report to.'
     required: false
-    default: 'agent-pr-guard.sarif'
+    default: 'agent-pr-police.sarif'
   github-token:
     description: 'Token used to read the PR and post the sticky comment.'
     required: false
@@ -54,7 +54,7 @@ inputs:
 
 outputs:
   is-agent-pr:
-    description: 'Whether the PR was detected as authored by the Copilot agent.'
+    description: 'Whether the PR was detected as authored by an AI coding agent.'
     value: ${{ steps.guard.outputs.is-agent-pr }}
   findings:
     description: 'All findings as a JSON array.'
@@ -79,16 +79,16 @@ runs:
         # No third-party dependencies, so there is nothing to cache.
         cache: false
 
-    - name: Build agent-pr-guard
+    - name: Build agent-pr-police
       shell: bash
       working-directory: ${{ github.action_path }}
       run: |
         mkdir -p "${{ github.action_path }}/bin"
         go build -ldflags "-s -w -X main.version=${{ github.action_ref || 'dev' }}" \
-          -o "${{ github.action_path }}/bin/agent-pr-guard" \
-          ./cmd/agent-pr-guard
+          -o "${{ github.action_path }}/bin/agent-pr-police" \
+          ./cmd/agent-pr-police
 
-    - name: Run agent-pr-guard
+    - name: Run agent-pr-police
       id: guard
       shell: bash
       env:
@@ -101,4 +101,4 @@ runs:
         INPUT_SENSITIVE_PATH_MODE: ${{ inputs.sensitive-path-mode }}
         INPUT_SARIF_FILE: ${{ inputs.sarif-file }}
         GITHUB_TOKEN: ${{ inputs.github-token }}
-      run: "${{ github.action_path }}/bin/agent-pr-guard"
+      run: "${{ github.action_path }}/bin/agent-pr-police"

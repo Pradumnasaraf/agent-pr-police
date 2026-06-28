@@ -65,10 +65,10 @@ jobs:
         with:
           go-version-file: go.mod
       - name: Safe Dockerfile should pass
-        run: go run ./cmd/agent-pr-guard scan examples/safe.Dockerfile
+        run: go run ./cmd/agent-pr-police scan examples/safe.Dockerfile
       - name: Insecure Dockerfile should fail
         run: |
-          if go run ./cmd/agent-pr-guard scan examples/insecure.Dockerfile; then
+          if go run ./cmd/agent-pr-police scan examples/insecure.Dockerfile; then
             echo "::error::expected the insecure example to fail the scan, but it passed"
             exit 1
           fi

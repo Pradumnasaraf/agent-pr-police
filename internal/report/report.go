@@ -9,12 +9,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/pradumnasaraf/agent-pr-guard/internal/rules"
+	"github.com/pradumnasaraf/agent-pr-police/internal/rules"
 )
 
 // Marker is the hidden HTML comment used to find and update the single sticky
 // PR comment so the Action never posts duplicates.
-const Marker = "<!-- agent-pr-guard:sticky-comment -->"
+const Marker = "<!-- agent-pr-police:sticky-comment -->"
 
 // Input is everything needed to render a report.
 type Input struct {
@@ -37,7 +37,7 @@ type Input struct {
 func Build(in Input) string {
 	var b strings.Builder
 	b.WriteString(Marker)
-	b.WriteString("\n## 🛡️ agent-pr-guard\n\n")
+	b.WriteString("\n## 🛡️ agent-pr-police\n\n")
 
 	// Detection header.
 	if in.IsAgent {

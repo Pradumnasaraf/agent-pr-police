@@ -1,4 +1,4 @@
-// Package rules contains the security policy engine for agent-pr-guard.
+// Package rules contains the security policy engine for agent-pr-police.
 //
 // This package is intentionally free of any GitHub-specific dependencies so
 // that the rule core can be reused outside of this Action (for example, as a

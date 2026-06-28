@@ -1,4 +1,4 @@
-# An intentionally insecure Dockerfile used to demonstrate copilot-pr-guard.
+# An intentionally insecure Dockerfile used to demonstrate agent-pr-police.
 FROM node:latest
 
 # Hardcoded secret baked into the image.

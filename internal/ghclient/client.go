@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/pradumnasaraf/agent-pr-guard/internal/rules"
+	"github.com/pradumnasaraf/agent-pr-police/internal/rules"
 )
 
 // Client is a minimal GitHub REST client using only the standard library.

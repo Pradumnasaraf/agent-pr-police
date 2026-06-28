@@ -3,7 +3,7 @@ package ghclient
 import "testing"
 
 func TestFindSticky(t *testing.T) {
-	marker := "<!-- agent-pr-guard:sticky-comment -->"
+	marker := "<!-- agent-pr-police:sticky-comment -->"
 	comments := []Comment{
 		{ID: 1, Body: "first comment"},
 		{ID: 2, Body: marker + "\n## report"},

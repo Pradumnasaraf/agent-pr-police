@@ -1,8 +1,8 @@
-// Command agent-pr-guard is the entrypoint binary run by the composite
+// Command agent-pr-police is the entrypoint binary run by the composite
 // GitHub Action. It has two modes:
 //
-//	agent-pr-guard           run in GitHub Action / PR context (default)
-//	agent-pr-guard scan PATH run the rules over local paths (CI self-test)
+//	agent-pr-police           run in GitHub Action / PR context (default)
+//	agent-pr-police scan PATH run the rules over local paths (CI self-test)
 package main
 
 import (
@@ -14,11 +14,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pradumnasaraf/agent-pr-guard/internal/detect"
-	"github.com/pradumnasaraf/agent-pr-guard/internal/ghclient"
-	"github.com/pradumnasaraf/agent-pr-guard/internal/report"
-	"github.com/pradumnasaraf/agent-pr-guard/internal/rules"
-	"github.com/pradumnasaraf/agent-pr-guard/internal/sarif"
+	"github.com/pradumnasaraf/agent-pr-police/internal/detect"
+	"github.com/pradumnasaraf/agent-pr-police/internal/ghclient"
+	"github.com/pradumnasaraf/agent-pr-police/internal/report"
+	"github.com/pradumnasaraf/agent-pr-police/internal/rules"
+	"github.com/pradumnasaraf/agent-pr-police/internal/sarif"
 )
 
 // version is overridden at build time via -ldflags.
@@ -50,7 +50,7 @@ func loadConfig() config {
 		label:             envOr("INPUT_LABEL", "agent"),
 		treatAll:          envOr("INPUT_TREAT_ALL_PRS_AS_AGENT", "false") == "true",
 		sensitivePathMode: envOr("INPUT_SENSITIVE_PATH_MODE", "block"),
-		sarifFile:         envOr("INPUT_SARIF_FILE", "agent-pr-guard.sarif"),
+		sarifFile:         envOr("INPUT_SARIF_FILE", "agent-pr-police.sarif"),
 	}
 	cfg.extraIdentifiers = splitLines(os.Getenv("INPUT_EXTRA_AGENT_IDENTIFIERS"))
 	if raw := strings.TrimSpace(os.Getenv("INPUT_SENSITIVE_PATHS")); raw != "" {
@@ -150,7 +150,7 @@ func runAction() int {
 func runScan(paths []string) int {
 	cfg := loadConfig()
 	if len(paths) == 0 {
-		fmt.Fprintln(os.Stderr, "usage: agent-pr-guard scan <path> [path...]")
+		fmt.Fprintln(os.Stderr, "usage: agent-pr-police scan <path> [path...]")
 		return 2
 	}
 	files, err := collectLocalFiles(paths)

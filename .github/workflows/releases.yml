@@ -35,7 +35,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Marketplace consumers pin to a major version (e.g. uses: Pradumnasaraf/agent-pr-guard@v1).
+      # Marketplace consumers pin to a major version (e.g. uses: Pradumnasaraf/agent-pr-police@v1).
       # Move that floating major tag to the freshly released commit.
       - name: Update major version tag
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
