@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build-format:
+    name: Build and Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Build
+        run: go build -v ./...
+      - name: Format
+        run: diff <(gofmt -d .) <(echo -n)
+      - name: Vet
+        run: go vet ./...
+
+  golangci-lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: GolangCI-Lint Check
+        uses: golangci/golangci-lint-action@v6
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Get Dependencies
+        run: go get -v ./...
+      - name: Run tests
+        run: go test ./...
+
+  self-scan:
+    name: Dogfood (scan examples)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Safe Dockerfile should pass
+        run: go run ./cmd/agent-pr-guard scan examples/safe.Dockerfile
+      - name: Insecure Dockerfile should fail
+        run: |
+          if go run ./cmd/agent-pr-guard scan examples/insecure.Dockerfile; then
+            echo "::error::expected the insecure example to fail the scan, but it passed"
+            exit 1
+          fi
+          echo "Insecure example correctly flagged."

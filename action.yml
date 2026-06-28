@@ -1,0 +1,104 @@
+name: 'Agent PR Guard'
+description: 'Apply extra security policy to pull requests authored by AI coding agents (Copilot, Claude Code, Devin, Cursor, Codex, and more).'
+author: 'Pradumna Saraf'
+
+branding:
+  icon: 'shield'
+  color: 'purple'
+
+inputs:
+  fail-on:
+    description: 'Minimum severity that fails the check: none | low | medium | high.'
+    required: false
+    default: 'high'
+  comment-on-pr:
+    description: 'Post/update a single sticky comment on the PR with the findings.'
+    required: false
+    default: 'true'
+  label:
+    description: 'Label name that marks a PR as agent-authored.'
+    required: false
+    default: 'agent'
+  treat-all-prs-as-agent:
+    description: 'Bypass detection and run the policy on every PR.'
+    required: false
+    default: 'false'
+  extra-agent-identifiers:
+    description: 'Newline-separated extra substrings matched against the PR author login and co-author trailers, for agents not in the built-in registry.'
+    required: false
+    default: ''
+  sensitive-paths:
+    description: 'Newline-separated list of glob patterns treated as sensitive.'
+    required: false
+    default: |
+      .github/workflows/**
+      **/Dockerfile
+      infra/**
+      terraform/**
+      **/*.tf
+      **/secrets*
+      **/*.pem
+      **/auth/**
+  sensitive-path-mode:
+    description: 'How to treat edits to sensitive paths: block (HIGH, fails) or warn (MEDIUM).'
+    required: false
+    default: 'block'
+  sarif-file:
+    description: 'Path to write the SARIF 2.1.0 report to.'
+    required: false
+    default: 'agent-pr-guard.sarif'
+  github-token:
+    description: 'Token used to read the PR and post the sticky comment.'
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  is-agent-pr:
+    description: 'Whether the PR was detected as authored by the Copilot agent.'
+    value: ${{ steps.guard.outputs.is-agent-pr }}
+  findings:
+    description: 'All findings as a JSON array.'
+    value: ${{ steps.guard.outputs.findings }}
+  high-count:
+    description: 'Number of high-severity findings.'
+    value: ${{ steps.guard.outputs.high-count }}
+  medium-count:
+    description: 'Number of medium-severity findings.'
+    value: ${{ steps.guard.outputs.medium-count }}
+  low-count:
+    description: 'Number of low-severity findings.'
+    value: ${{ steps.guard.outputs.low-count }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: ${{ github.action_path }}/go.mod
+        # No third-party dependencies, so there is nothing to cache.
+        cache: false
+
+    - name: Build agent-pr-guard
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: |
+        mkdir -p "${{ github.action_path }}/bin"
+        go build -ldflags "-s -w -X main.version=${{ github.action_ref || 'dev' }}" \
+          -o "${{ github.action_path }}/bin/agent-pr-guard" \
+          ./cmd/agent-pr-guard
+
+    - name: Run agent-pr-guard
+      id: guard
+      shell: bash
+      env:
+        INPUT_FAIL_ON: ${{ inputs.fail-on }}
+        INPUT_COMMENT_ON_PR: ${{ inputs.comment-on-pr }}
+        INPUT_LABEL: ${{ inputs.label }}
+        INPUT_TREAT_ALL_PRS_AS_AGENT: ${{ inputs.treat-all-prs-as-agent }}
+        INPUT_EXTRA_AGENT_IDENTIFIERS: ${{ inputs.extra-agent-identifiers }}
+        INPUT_SENSITIVE_PATHS: ${{ inputs.sensitive-paths }}
+        INPUT_SENSITIVE_PATH_MODE: ${{ inputs.sensitive-path-mode }}
+        INPUT_SARIF_FILE: ${{ inputs.sarif-file }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: "${{ github.action_path }}/bin/agent-pr-guard"

@@ -1,0 +1,49 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    name: Tag and Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Creating Changelog and Release
+        id: changelog
+        uses: TriPSs/conventional-changelog-action@v5
+        with:
+          github-token: ${{ secrets.PA_TOKEN }}
+          output-file: "false"
+          skip-commit: "true"
+          create-summary: "true"
+
+      - name: Create GitHub Release
+        if: ${{ steps.changelog.outputs.skipped == 'false' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.changelog.outputs.tag }}
+          body: ${{ steps.changelog.outputs.clean_changelog }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Marketplace consumers pin to a major version (e.g. uses: Pradumnasaraf/agent-pr-guard@v1).
+      # Move that floating major tag to the freshly released commit.
+      - name: Update major version tag
+        if: ${{ steps.changelog.outputs.skipped == 'false' }}
+        env:
+          TAG: ${{ steps.changelog.outputs.tag }}
+        run: |
+          MAJOR="${TAG%%.*}"          # v1.2.3 -> v1
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -f "$MAJOR"
+          git push origin "$MAJOR" --force

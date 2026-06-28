@@ -1,0 +1,17 @@
+{
+  "action": "synchronize",
+  "pull_request": {
+    "number": 7,
+    "user": {
+      "login": "octocat",
+      "type": "User"
+    },
+    "labels": [
+      { "name": "bug" }
+    ]
+  },
+  "repository": {
+    "name": "demo-repo",
+    "owner": { "login": "acme" }
+  }
+}
