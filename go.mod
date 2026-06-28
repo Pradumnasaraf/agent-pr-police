@@ -1,3 +1,3 @@
 module github.com/pradumnasaraf/agent-pr-guard
 
-go 1.26.4
+go 1.24
