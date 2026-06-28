@@ -1,7 +1,4 @@
-[![build-ci][build-ci-badge]][build-ci]
-[![releases-ci][releases-ci-badge]][releases-ci]
-[![release][release-badge]][release]
-[![actions-marketplace][actions-marketplace-badge]][actions-marketplace]
+[![build-ci][build-ci-badge]][build-ci] [![releases-ci][releases-ci-badge]][releases-ci] [![release][release-badge]][release] [![actions-marketplace][actions-marketplace-badge]][actions-marketplace]
 
 ## About (Agent PR Police)
 
