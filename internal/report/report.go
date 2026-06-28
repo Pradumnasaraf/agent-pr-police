@@ -37,7 +37,7 @@ type Input struct {
 func Build(in Input) string {
 	var b strings.Builder
 	b.WriteString(Marker)
-	b.WriteString("\n## 🛡️ agent-pr-police\n\n")
+	b.WriteString("\n## 🛡️ Agent PR Police\n\n")
 
 	// Detection header.
 	if in.IsAgent {
@@ -83,11 +83,11 @@ func Build(in Input) string {
 }
 
 func statusLine(in Input, c rules.Counts) string {
-	summary := fmt.Sprintf("**%d high · %d medium · %d low**", c.High, c.Medium, c.Low)
+	summary := fmt.Sprintf("**%d high, %d medium, %d low**", c.High, c.Medium, c.Low)
 	if in.Failed {
-		return fmt.Sprintf("❌ **Check failed** — findings at or above `%s` are present.\n\n%s", in.FailOn, summary)
+		return fmt.Sprintf("❌ **Check failed.** Findings at or above `%s` are present.\n\n%s", in.FailOn, summary)
 	}
-	return fmt.Sprintf("✅ **Check passed** — no findings at or above `%s`.\n\n%s", in.FailOn, summary)
+	return fmt.Sprintf("✅ **Check passed.** No findings at or above `%s`.\n\n%s", in.FailOn, summary)
 }
 
 func writeGroup(b *strings.Builder, heading string, findings []rules.Finding, sev rules.Severity) {
@@ -101,17 +101,24 @@ func writeGroup(b *strings.Builder, heading string, findings []rules.Finding, se
 		return
 	}
 	fmt.Fprintf(b, "### %s (%d)\n\n", heading, len(group))
+	b.WriteString("| Location | Issue | How to fix |\n")
+	b.WriteString("| --- | --- | --- |\n")
 	for _, f := range group {
 		loc := f.File
 		if f.Line > 0 {
 			loc = fmt.Sprintf("%s:%d", f.File, f.Line)
 		}
-		fmt.Fprintf(b, "- **`%s`** — `%s`\n", f.Title, f.RuleID)
-		fmt.Fprintf(b, "  - 📄 `%s`\n", loc)
-		fmt.Fprintf(b, "  - ❓ %s\n", f.Message)
-		fmt.Fprintf(b, "  - 🔧 %s\n", f.FixHint)
+		issue := fmt.Sprintf("**%s** `%s`<br>%s", f.Title, f.RuleID, cell(f.Message))
+		fmt.Fprintf(b, "| `%s` | %s | %s |\n", cell(loc), issue, cell(f.FixHint))
 	}
 	b.WriteString("\n")
+}
+
+// cell escapes a value so it renders safely inside a Markdown table cell.
+func cell(s string) string {
+	s = strings.ReplaceAll(s, "|", "\\|")
+	s = strings.ReplaceAll(s, "\n", " ")
+	return s
 }
 
 // humanChecklist derives a short list of things a reviewer should verify based
