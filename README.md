@@ -53,7 +53,7 @@ permissions:
 ### Example Workflow
 
 > [!IMPORTANT]
-> Before using the code below, check the latest `agent-pr-guard` version in the `uses` field from the [GitHub Marketplace](https://github.com/marketplace/actions/agent-pr-guard).
+> Before using the code below, check the latest `agent-pr-guard` version in the `uses` field from the [GitHub Marketplace](https://github.com/marketplace/actions/agent-pr-police).
 
 ```yaml
 name: Agent PR Guard
@@ -119,5 +119,5 @@ For information on reporting security vulnerabilities, please refer to the [Secu
 [releases-ci-badge]: https://github.com/Pradumnasaraf/agent-pr-guard/actions/workflows/releases.yml/badge.svg
 [release]: https://github.com/Pradumnasaraf/agent-pr-guard/releases
 [release-badge]: https://img.shields.io/github/v/release/Pradumnasaraf/agent-pr-guard
-[actions-marketplace]: https://github.com/marketplace/actions/agent-pr-guard
-[actions-marketplace-badge]: https://img.shields.io/badge/marketplace-Agent%20PR%20Guard-blue?&logo=github
+[actions-marketplace]: https://github.com/marketplace/actions/agent-pr-police
+[actions-marketplace-badge]: https://img.shields.io/badge/marketplace-Agent%20PR%20Police-blue?&logo=github

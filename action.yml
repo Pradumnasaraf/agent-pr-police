@@ -1,4 +1,4 @@
-name: 'Agent PR Security Guard'
+name: 'Agent PR Police'
 description: 'Run extra security checks on pull requests opened by AI coding agents like Copilot, Claude Code, Devin, and Cursor.'
 author: 'Pradumna Saraf'
 
