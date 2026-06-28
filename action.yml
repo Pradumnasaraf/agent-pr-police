@@ -1,5 +1,5 @@
-name: 'Agent PR Guard'
-description: 'Apply extra security policy to pull requests authored by AI coding agents (Copilot, Claude Code, Devin, Cursor, Codex, and more).'
+name: 'Agent PR Security Guard'
+description: 'Run extra security checks on pull requests opened by AI coding agents like Copilot, Claude Code, Devin, and Cursor.'
 author: 'Pradumna Saraf'
 
 branding:
