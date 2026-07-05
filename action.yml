@@ -27,6 +27,14 @@ inputs:
     description: 'Newline-separated substrings matched against the PR author login, branch name, and co-author trailers, for agents not in the built-in registry.'
     required: false
     default: ''
+  mention:
+    description: 'Handles to cc in the comment on agent PRs (space/comma/newline separated, e.g. "@alice @org/team"). The PR author is skipped. Needs comment enabled.'
+    required: false
+    default: ''
+  request-reviewers:
+    description: 'Users and teams to request a review from on agent PRs (e.g. "@alice @org/team"). The PR author is skipped. Failures (no access, etc.) are ignored, never fatal.'
+    required: false
+    default: ''
   github-token:
     description: 'Token used to read the PR, add the label, and post the comment.'
     required: false
@@ -47,4 +55,6 @@ runs:
     INPUT_COMMENT: ${{ inputs.comment }}
     INPUT_TREAT_ALL_PRS_AS_AGENT: ${{ inputs.treat-all-prs-as-agent }}
     INPUT_EXTRA_AGENT_IDENTIFIERS: ${{ inputs.extra-agent-identifiers }}
+    INPUT_MENTION: ${{ inputs.mention }}
+    INPUT_REQUEST_REVIEWERS: ${{ inputs.request-reviewers }}
     GITHUB_TOKEN: ${{ inputs.github-token }}

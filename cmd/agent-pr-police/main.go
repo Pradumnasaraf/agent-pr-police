@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/pradumnasaraf/agent-pr-police/internal/detect"
 	"github.com/pradumnasaraf/agent-pr-police/internal/ghclient"
@@ -18,6 +19,8 @@ type config struct {
 	comment          bool
 	treatAll         bool
 	extraIdentifiers []string
+	mention          []string
+	requestReviewers []string
 }
 
 func main() {
@@ -31,6 +34,8 @@ func loadConfig() config {
 		comment:          envOr("INPUT_COMMENT", "true") == "true",
 		treatAll:         envOr("INPUT_TREAT_ALL_PRS_AS_AGENT", "false") == "true",
 		extraIdentifiers: splitLines(os.Getenv("INPUT_EXTRA_AGENT_IDENTIFIERS")),
+		mention:          splitList(os.Getenv("INPUT_MENTION")),
+		requestReviewers: splitList(os.Getenv("INPUT_REQUEST_REVIEWERS")),
 	}
 }
 
@@ -39,18 +44,18 @@ func run() int {
 
 	eventPath := os.Getenv("GITHUB_EVENT_PATH")
 	if eventPath == "" {
-		fmt.Fprintln(os.Stderr, "error: GITHUB_EVENT_PATH is not set; this action expects a pull_request event")
-		return 1
+		fmt.Fprintln(os.Stderr, "note: GITHUB_EVENT_PATH is not set; expected a pull_request event. Nothing to do.")
+		return 0
 	}
 	data, err := os.ReadFile(eventPath)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error: reading event payload: %v\n", err)
-		return 1
+		fmt.Fprintf(os.Stderr, "note: could not read event payload (%v). Nothing to do.\n", err)
+		return 0
 	}
 	ev, err := detect.ParseEvent(data)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "error: %v\n", err)
-		return 1
+		fmt.Fprintf(os.Stderr, "note: %v Nothing to do.\n", err)
+		return 0
 	}
 
 	client := ghclient.NewClient()
@@ -74,16 +79,23 @@ func run() int {
 		return 0
 	}
 
-	files, err := client.ChangedFiles(ev.RepoOwner, ev.RepoName, ev.PRNumber)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "error: fetching changed files: %v\n", err)
-		return 1
+	var sum summary.Summary
+	statsAvailable := true
+	if files, err := client.ChangedFiles(ev.RepoOwner, ev.RepoName, ev.PRNumber); err == nil {
+		sum = summary.Build(files)
+	} else {
+		fmt.Fprintf(os.Stderr, "warning: fetching changed files: %v\n", err)
+		statsAvailable = false
 	}
 
+	mentions := dropAuthor(cfg.mention, ev.PR.AuthorLogin)
+
 	rep := report.Build(report.Input{
-		Agent:   det.Agent,
-		Signals: det.Signals,
-		Summary: summary.Build(files),
+		Agent:          det.Agent,
+		Signals:        det.Signals,
+		Summary:        sum,
+		StatsAvailable: statsAvailable,
+		Mentions:       mentions,
 	})
 
 	fmt.Println(rep)
@@ -101,7 +113,26 @@ func run() int {
 		}
 	}
 
+	requestReviews(client, ev, dropAuthor(cfg.requestReviewers, ev.PR.AuthorLogin))
+
 	return 0
+}
+
+// requestReviews asks each configured user and team for a review, one at a time
+// so a single invalid or unauthorized handle does not block the others. Every
+// failure is a warning, never fatal.
+func requestReviews(client *ghclient.Client, ev *detect.Event, handles []string) {
+	users, teams := parseReviewers(handles)
+	for _, u := range users {
+		if err := client.RequestReviewers(ev.RepoOwner, ev.RepoName, ev.PRNumber, []string{u}, nil); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: could not request review from %q: %v\n", u, err)
+		}
+	}
+	for _, t := range teams {
+		if err := client.RequestReviewers(ev.RepoOwner, ev.RepoName, ev.PRNumber, nil, []string{t}); err != nil {
+			fmt.Fprintf(os.Stderr, "warning: could not request review from team %q: %v\n", t, err)
+		}
+	}
 }
 
 func writeOutputs(det detect.Result) {
@@ -146,4 +177,48 @@ func splitLines(raw string) []string {
 		}
 	}
 	return out
+}
+
+// splitList parses a list of GitHub handles separated by whitespace, newlines,
+// or commas, stripping any leading "@". Handles look like "user" or "org/team".
+func splitList(raw string) []string {
+	fields := strings.FieldsFunc(raw, func(r rune) bool {
+		return r == ',' || unicode.IsSpace(r)
+	})
+	var out []string
+	for _, f := range fields {
+		if h := strings.TrimPrefix(strings.TrimSpace(f), "@"); h != "" {
+			out = append(out, h)
+		}
+	}
+	return out
+}
+
+// dropAuthor removes any handle that matches the PR author, so the action never
+// pings someone about their own PR.
+func dropAuthor(handles []string, author string) []string {
+	a := strings.ToLower(strings.TrimSpace(author))
+	var out []string
+	for _, h := range handles {
+		if strings.ToLower(h) == a {
+			continue
+		}
+		out = append(out, h)
+	}
+	return out
+}
+
+// parseReviewers splits handles into individual users and team slugs. A handle
+// containing "/" is treated as "org/team" and reduced to the team slug.
+func parseReviewers(handles []string) (users, teams []string) {
+	for _, h := range handles {
+		if _, team, ok := strings.Cut(h, "/"); ok {
+			if team != "" {
+				teams = append(teams, team)
+			}
+			continue
+		}
+		users = append(users, h)
+	}
+	return users, teams
 }

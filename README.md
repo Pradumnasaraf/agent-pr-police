@@ -9,7 +9,10 @@ It does not gate or block anything. It is a transparency layer, not a security s
 - **Agent detection**: Detects agent-authored PRs from the author login, the branch name, `Co-authored-by` commit trailers, markers in the PR description, or a label. Add your own identifiers for agents that aren't built in.
 - **Auto label**: Applies a `pr-by-ai` label (configurable) to detected agent PRs. If you add the label by hand, the PR is treated as agent-authored too.
 - **Sticky summary comment**: Posts one comment with the agent name and a summary of what the PR changed (files, added and removed lines, top areas). It updates in place on every run, so no duplicates.
-- **Opt in or out**: The label and the comment are each independently toggleable.
+- **Notify reviewers**: Optionally cc a user or team in the comment and request their review on agent PRs. The PR author is never pinged.
+- **Never blocks**: It only informs, it never gates a PR. Permission and API errors are logged as warnings, so the check never fails.
+- **Reusable outputs**: Later steps in your workflow can read `is-agent-pr` (`true`/`false`) and `agent` (the detected name) to add your own automation, like routing reviewers or gating elsewhere.
+- **Opt in or out**: The label, comment, and reviewer notifications are each independently toggleable.
 
 ## Detected agents
 
@@ -28,6 +31,8 @@ All inputs are optional.
 | `comment` | `true` | Post and update a single sticky comment summarizing the PR. |
 | `treat-all-prs-as-agent` | `false` | Skip detection and treat every PR as agent-authored. |
 | `extra-agent-identifiers` | `` | Newline-separated substrings matched against the author login, branch name, and co-author trailers, for agents not in the built-in registry. |
+| `mention` | `` | Handles to `cc` in the comment on agent PRs (e.g. `@alice @org/team`). The PR author is skipped. Needs `comment` enabled. |
+| `request-reviewers` | `` | Users and teams to request a review from on agent PRs (e.g. `@alice @org/team`). The PR author is skipped. Failures (no access, etc.) are ignored, never fatal. |
 | `github-token` | `${{ github.token }}` | Token used to read the PR, add the label, and post the comment. |
 
 Outputs: `is-agent-pr` (`true` or `false`) and `agent` (the detected agent name, empty if none).
@@ -102,6 +107,8 @@ jobs:
           extra-agent-identifiers: | # Optional. Extra agent matches, one per line
             acme-ai
             my-internal-bot
+          mention: "@org/reviewers" # Optional. cc these handles in the comment
+          request-reviewers: "@org/reviewers" # Optional. Request a review from these
           github-token: ${{ github.token }} # Optional. Defaults to GITHUB_TOKEN
 ```
 

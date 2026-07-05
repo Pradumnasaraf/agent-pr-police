@@ -10,9 +10,11 @@ import (
 const Marker = "<!-- agent-pr-police:sticky-comment -->"
 
 type Input struct {
-	Agent   string
-	Signals []string
-	Summary summary.Summary
+	Agent          string
+	Signals        []string
+	Summary        summary.Summary
+	StatsAvailable bool
+	Mentions       []string
 }
 
 func Build(in Input) string {
@@ -26,17 +28,29 @@ func Build(in Input) string {
 	}
 	fmt.Fprintf(&b, "This pull request was opened by %s.\n\n", who)
 
-	s := in.Summary
-	bd := breakdown(s)
-	if bd == "" {
-		bd = "no file changes"
-	}
-	b.WriteString("| Files changed | Lines | Breakdown |\n")
-	b.WriteString("| :-- | :-- | :-- |\n")
-	fmt.Fprintf(&b, "| %d | `+%d / -%d` | %s |\n", s.Files, s.Additions, s.Deletions, bd)
+	if in.StatsAvailable {
+		s := in.Summary
+		bd := breakdown(s)
+		if bd == "" {
+			bd = "no file changes"
+		}
+		b.WriteString("| Files changed | Lines | Breakdown |\n")
+		b.WriteString("| :-- | :-- | :-- |\n")
+		fmt.Fprintf(&b, "| %d | `+%d / -%d` | %s |\n", s.Files, s.Additions, s.Deletions, bd)
 
-	if len(s.TopDirs) > 0 {
-		fmt.Fprintf(&b, "\n**Top areas:** %s\n", topAreas(s.TopDirs))
+		if len(s.TopDirs) > 0 {
+			fmt.Fprintf(&b, "\n**Top areas:** %s\n", topAreas(s.TopDirs))
+		}
+	} else {
+		b.WriteString("_Change stats were unavailable for this run._\n")
+	}
+
+	if len(in.Mentions) > 0 {
+		handles := make([]string, len(in.Mentions))
+		for i, m := range in.Mentions {
+			handles[i] = "@" + m
+		}
+		fmt.Fprintf(&b, "\ncc %s\n", strings.Join(handles, " "))
 	}
 
 	if len(in.Signals) > 0 {

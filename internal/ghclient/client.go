@@ -121,6 +121,22 @@ func (c *Client) AddLabels(owner, repo string, number int, labels []string) erro
 	return c.do(http.MethodPost, path, bytes.NewReader(payload), nil)
 }
 
+func (c *Client) RequestReviewers(owner, repo string, number int, users, teams []string) error {
+	payload := map[string][]string{}
+	if len(users) > 0 {
+		payload["reviewers"] = users
+	}
+	if len(teams) > 0 {
+		payload["team_reviewers"] = teams
+	}
+	if len(payload) == 0 {
+		return nil
+	}
+	body, _ := json.Marshal(payload)
+	path := fmt.Sprintf("/repos/%s/%s/pulls/%d/requested_reviewers", owner, repo, number)
+	return c.do(http.MethodPost, path, bytes.NewReader(body), nil)
+}
+
 type Comment struct {
 	ID   int64  `json:"id"`
 	Body string `json:"body"`
