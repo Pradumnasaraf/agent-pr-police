@@ -4,6 +4,8 @@
 
 It does not gate or block anything. It is a transparency layer, not a security scanner.
 
+![Agent PR Police comment on a pull request](https://github.com/user-attachments/assets/e09f376e-1d24-41a6-bc27-d19505073872)
+
 ## Features
 
 - **Agent detection**: Detects agent-authored PRs from the author login, the branch name, `Co-authored-by` commit trailers, markers in the PR description, or a label. Add your own identifiers for agents that aren't built in.
@@ -16,7 +18,7 @@ It does not gate or block anything. It is a transparency layer, not a security s
 
 ## Detected agents
 
-GitHub Copilot, Claude Code, Devin, Cursor, OpenAI Codex, Aider, Google Jules, Sourcegraph Cody, Sweep, Windsurf, Amazon Q, Replit Agent, v0, Bolt, Codeium, and Tabnine.
+GitHub Copilot, Claude Code, Devin, Cursor, OpenAI Codex, Aider, Google Jules, Sourcegraph Amp, Sweep, Amazon Q, OpenHands, Charlie, Ellipsis, Factory, Tembo, Zencoder, Codegen, and v0.
 
 Each agent is matched on the signals that fit it: a distinctive login for agents that open PRs under a bot account, a branch prefix (like `copilot/` or `cursor/`), a `Co-authored-by` trailer, or a marker in the PR description (like Claude Code's "Generated with Claude Code" footer). Agents whose tooling commits under a human account (like Claude Code and Aider) are matched by trailer or PR body rather than login, to avoid false positives on human names.
 
@@ -31,8 +33,8 @@ All inputs are optional.
 | `comment` | `true` | Post and update a single sticky comment summarizing the PR. |
 | `treat-all-prs-as-agent` | `false` | Skip detection and treat every PR as agent-authored. |
 | `extra-agent-identifiers` | `` | Newline-separated substrings matched against the author login, branch name, and co-author trailers, for agents not in the built-in registry. |
-| `mention` | `` | Handles to `cc` in the comment on agent PRs (e.g. `@alice @org/team`). The PR author is skipped. Needs `comment` enabled. |
-| `request-reviewers` | `` | Users and teams to request a review from on agent PRs (e.g. `@alice @org/team`). The PR author is skipped. Failures (no access, etc.) are ignored, never fatal. |
+| `mention` | `` | Handles to `cc` in the comment on agent PRs, a single user or team, or several (e.g. `@alice`, or `@alice @org/team`). The PR author is skipped. Needs `comment` enabled. |
+| `request-reviewers` | `` | Users and teams to request a review from on agent PRs, a single one or several (e.g. `@alice`, or `@alice @org/team`). The PR author is skipped. Failures (no access, etc.) are ignored, never fatal. |
 | `github-token` | `${{ github.token }}` | Token used to read the PR, add the label, and post the comment. |
 
 Outputs: `is-agent-pr` (`true` or `false`) and `agent` (the detected agent name, empty if none).
@@ -107,8 +109,8 @@ jobs:
           extra-agent-identifiers: | # Optional. Extra agent matches, one per line
             acme-ai
             my-internal-bot
-          mention: "@org/reviewers" # Optional. cc these handles in the comment
-          request-reviewers: "@org/reviewers" # Optional. Request a review from these
+          mention: "@octocat @my-org/reviewers" # Optional. cc these users/teams in the comment
+          request-reviewers: "@octocat @my-org/reviewers" # Optional. request review from these users/teams
           github-token: ${{ github.token }} # Optional. Defaults to GITHUB_TOKEN
 ```
 

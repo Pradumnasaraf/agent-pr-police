@@ -43,7 +43,7 @@ jobs:
           TAG: ${{ steps.changelog.outputs.tag }}
         run: |
           IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}"
-          MAJOR="${TAG%%.*}"          # v1.2.3 -> v1
+          MAJOR="${TAG%%.*}"
           {
             echo "tags<<EOF"
             echo "${IMAGE}:${TAG}"
@@ -74,14 +74,12 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # Marketplace consumers pin to a major version (e.g. uses: Pradumnasaraf/agent-pr-police@v1).
-      # Move that floating major tag to the freshly released commit.
       - name: Update major version tag
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
         env:
           TAG: ${{ steps.changelog.outputs.tag }}
         run: |
-          MAJOR="${TAG%%.*}"          # v1.2.3 -> v1
+          MAJOR="${TAG%%.*}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag -f "$MAJOR"

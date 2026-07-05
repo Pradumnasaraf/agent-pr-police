@@ -118,9 +118,6 @@ func run() int {
 	return 0
 }
 
-// requestReviews asks each configured user and team for a review, one at a time
-// so a single invalid or unauthorized handle does not block the others. Every
-// failure is a warning, never fatal.
 func requestReviews(client *ghclient.Client, ev *detect.Event, handles []string) {
 	users, teams := parseReviewers(handles)
 	for _, u := range users {
@@ -179,8 +176,6 @@ func splitLines(raw string) []string {
 	return out
 }
 
-// splitList parses a list of GitHub handles separated by whitespace, newlines,
-// or commas, stripping any leading "@". Handles look like "user" or "org/team".
 func splitList(raw string) []string {
 	fields := strings.FieldsFunc(raw, func(r rune) bool {
 		return r == ',' || unicode.IsSpace(r)
@@ -194,8 +189,6 @@ func splitList(raw string) []string {
 	return out
 }
 
-// dropAuthor removes any handle that matches the PR author, so the action never
-// pings someone about their own PR.
 func dropAuthor(handles []string, author string) []string {
 	a := strings.ToLower(strings.TrimSpace(author))
 	var out []string
@@ -208,8 +201,6 @@ func dropAuthor(handles []string, author string) []string {
 	return out
 }
 
-// parseReviewers splits handles into individual users and team slugs. A handle
-// containing "/" is treated as "org/team" and reduced to the team slug.
 func parseReviewers(handles []string) (users, teams []string) {
 	for _, h := range handles {
 		if _, team, ok := strings.Cut(h, "/"); ok {
