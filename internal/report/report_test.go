@@ -45,10 +45,17 @@ func TestBuildUnnamedAgent(t *testing.T) {
 
 func TestBuildSummaryContent(t *testing.T) {
 	out := Build(Input{Agent: "Devin", Summary: sampleSummary()})
-	for _, want := range []string{"3 files", "+55 / -5 lines", "1 added", "2 modified", "Top areas", "`internal/`", "`(root)`"} {
+	for _, want := range []string{"| 3 |", "+55 / -5", "1 added", "2 modified", "**Top areas:**", "`internal/` (2)", "`(root)` (1)"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("expected output to contain %q, got: %s", want, out)
 		}
+	}
+}
+
+func TestBuildNoEmoji(t *testing.T) {
+	out := Build(Input{Agent: "Cursor", Summary: sampleSummary()})
+	if strings.Contains(out, "🤖") {
+		t.Errorf("comment should not contain emoji, got: %s", out)
 	}
 }
 
@@ -57,7 +64,7 @@ func TestBuildSingleFile(t *testing.T) {
 		Agent:   "Cursor",
 		Summary: summary.Build([]summary.ChangedFile{{Path: "main.go", Status: "modified", Additions: 1, Deletions: 1}}),
 	})
-	if !strings.Contains(out, "1 file,") {
-		t.Errorf("expected singular file label, got: %s", out)
+	if !strings.Contains(out, "| 1 |") {
+		t.Errorf("expected single-file count in table, got: %s", out)
 	}
 }

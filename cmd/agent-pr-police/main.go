@@ -113,9 +113,9 @@ func writeOutputs(det detect.Result) {
 	if err != nil {
 		return
 	}
-	defer f.Close()
-	fmt.Fprintf(f, "is-agent-pr=%s\n", strconv.FormatBool(det.IsAgent))
-	fmt.Fprintf(f, "agent=%s\n", det.Agent)
+	defer func() { _ = f.Close() }()
+	_, _ = fmt.Fprintf(f, "is-agent-pr=%s\n", strconv.FormatBool(det.IsAgent))
+	_, _ = fmt.Fprintf(f, "agent=%s\n", det.Agent)
 }
 
 func writeStepSummary(rep string) {
@@ -127,8 +127,8 @@ func writeStepSummary(rep string) {
 	if err != nil {
 		return
 	}
-	defer f.Close()
-	fmt.Fprintln(f, rep)
+	defer func() { _ = f.Close() }()
+	_, _ = fmt.Fprintln(f, rep)
 }
 
 func envOr(key, def string) string {

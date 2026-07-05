@@ -18,32 +18,29 @@ type Input struct {
 func Build(in Input) string {
 	var b strings.Builder
 	b.WriteString(Marker)
-	b.WriteString("\n## 🤖 Agent PR Police\n\n")
+	b.WriteString("\n## Agent PR Police\n\n")
 
 	who := "an AI coding agent"
 	if in.Agent != "" {
 		who = "the **" + in.Agent + "** coding agent"
 	}
-	fmt.Fprintf(&b, "This PR was opened by %s.\n\n", who)
+	fmt.Fprintf(&b, "This pull request was opened by %s.\n\n", who)
 
 	s := in.Summary
-	fmt.Fprintf(&b, "**Changes:** %s, +%d / -%d lines.\n\n", filesLabel(s.Files), s.Additions, s.Deletions)
-
-	if bd := breakdown(s); bd != "" {
-		fmt.Fprintf(&b, "**Breakdown:** %s.\n\n", bd)
+	bd := breakdown(s)
+	if bd == "" {
+		bd = "no file changes"
 	}
+	b.WriteString("| Files changed | Lines | Breakdown |\n")
+	b.WriteString("| :-- | :-- | :-- |\n")
+	fmt.Fprintf(&b, "| %d | `+%d / -%d` | %s |\n", s.Files, s.Additions, s.Deletions, bd)
 
 	if len(s.TopDirs) > 0 {
-		b.WriteString("**Top areas**\n\n")
-		b.WriteString("| Area | Files |\n| --- | --- |\n")
-		for _, d := range s.TopDirs {
-			fmt.Fprintf(&b, "| `%s` | %d |\n", d.Dir, d.Files)
-		}
-		b.WriteString("\n")
+		fmt.Fprintf(&b, "\n**Top areas:** %s\n", topAreas(s.TopDirs))
 	}
 
 	if len(in.Signals) > 0 {
-		b.WriteString("<details><summary>Why this was flagged as an agent PR</summary>\n\n")
+		b.WriteString("\n<details>\n<summary>Why this was flagged as an agent PR</summary>\n\n")
 		for _, sig := range in.Signals {
 			b.WriteString("- " + sig + "\n")
 		}
@@ -53,11 +50,12 @@ func Build(in Input) string {
 	return b.String()
 }
 
-func filesLabel(n int) string {
-	if n == 1 {
-		return "1 file"
+func topAreas(dirs []summary.DirCount) string {
+	parts := make([]string, 0, len(dirs))
+	for _, d := range dirs {
+		parts = append(parts, fmt.Sprintf("`%s` (%d)", d.Dir, d.Files))
 	}
-	return fmt.Sprintf("%d files", n)
+	return strings.Join(parts, ", ")
 }
 
 func breakdown(s summary.Summary) string {

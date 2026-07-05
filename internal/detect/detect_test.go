@@ -19,6 +19,10 @@ func TestIdentifyLogin(t *testing.T) {
 		{"google-labs-jules[bot]", "Google Jules"},
 		{"sweep-ai[bot]", "Sweep"},
 		{"chatgpt-codex-connector[bot]", "OpenAI Codex"},
+		{"windsurf[bot]", "Windsurf"},
+		{"amazon-q-developer[bot]", "Amazon Q"},
+		{"codeium-bot", "Codeium"},
+		{"tabnine[bot]", "Tabnine"},
 		{"devin", ""},
 		{"jules", ""},
 		{"claude", ""},
@@ -48,7 +52,7 @@ func TestDetect(t *testing.T) {
 	}{
 		{
 			name:      "copilot bot author",
-			pr:        PullRequest{AuthorLogin: "copilot-swe-agent[bot]", AuthorType: "Bot"},
+			pr:        PullRequest{AuthorLogin: "copilot-swe-agent[bot]"},
 			wantAgent: true,
 			wantName:  "GitHub Copilot",
 		},
@@ -77,8 +81,31 @@ func TestDetect(t *testing.T) {
 			wantName:  "Aider",
 		},
 		{
+			name:      "copilot via branch name",
+			pr:        PullRequest{AuthorLogin: "octocat", HeadRef: "copilot/fix-typo"},
+			wantAgent: true,
+			wantName:  "GitHub Copilot",
+		},
+		{
+			name:      "cursor via branch name",
+			pr:        PullRequest{AuthorLogin: "octocat", HeadRef: "cursor/add-feature"},
+			wantAgent: true,
+			wantName:  "Cursor",
+		},
+		{
+			name:      "claude code via PR body marker",
+			pr:        PullRequest{AuthorLogin: "octocat", Body: "Summary of the change.\n\n🤖 Generated with Claude Code"},
+			wantAgent: true,
+			wantName:  "Claude Code",
+		},
+		{
+			name:      "human branch is not an agent",
+			pr:        PullRequest{AuthorLogin: "octocat", HeadRef: "feature/login", Body: "just a normal PR"},
+			wantAgent: false,
+		},
+		{
 			name:      "human author no signals",
-			pr:        PullRequest{AuthorLogin: "octocat", AuthorType: "User"},
+			pr:        PullRequest{AuthorLogin: "octocat"},
 			wantAgent: false,
 		},
 		{

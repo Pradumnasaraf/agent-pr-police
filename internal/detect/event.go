@@ -17,16 +17,17 @@ type Event struct {
 type rawEvent struct {
 	Action      string `json:"action"`
 	PullRequest struct {
-		Number int `json:"number"`
+		Number int    `json:"number"`
+		Body   string `json:"body"`
 		User   struct {
 			Login string `json:"login"`
-			Type  string `json:"type"`
 		} `json:"user"`
 		Labels []struct {
 			Name string `json:"name"`
 		} `json:"labels"`
 		Head struct {
 			SHA string `json:"sha"`
+			Ref string `json:"ref"`
 		} `json:"head"`
 	} `json:"pull_request"`
 	Repository struct {
@@ -57,7 +58,8 @@ func ParseEvent(data []byte) (*Event, error) {
 		HeadSHA:   raw.PullRequest.Head.SHA,
 		PR: PullRequest{
 			AuthorLogin: raw.PullRequest.User.Login,
-			AuthorType:  raw.PullRequest.User.Type,
+			HeadRef:     raw.PullRequest.Head.Ref,
+			Body:        raw.PullRequest.Body,
 			Labels:      labels,
 		},
 	}, nil

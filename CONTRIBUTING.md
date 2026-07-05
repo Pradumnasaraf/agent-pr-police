@@ -23,7 +23,7 @@
 
 ## 🧪 Local Development
 
-This is a [composite GitHub Action](action.yml) backed by a small Go program. The detection and summary core (`internal/detect`, `internal/summary`, `internal/report`) has no GitHub dependencies, so you can run and test everything locally.
+This is a [GitHub Action](action.yml) backed by a small Go program, shipped as a Docker container image. The detection and summary core (`internal/detect`, `internal/summary`, `internal/report`) has no GitHub dependencies, so you can run and test everything locally.
 
 ```bash
 # Build the binary
@@ -35,12 +35,15 @@ go test ./...
 # Check formatting and run static analysis
 gofmt -l .
 go vet ./...
+
+# Optional: build the container image the action runs
+docker build -t agent-pr-police .
 ```
 
 Please make sure `go build ./...`, `go vet ./...`, `go test ./...`, and `gofmt` all pass before opening a PR.
 
 ### Adding a new agent to the detection registry
 
-Append an entry to `Registry` in `internal/detect/detect.go` with distinctive login and/or co-author trailer patterns, and add a test case.
+Append an entry to `Registry` in `internal/detect/detect.go` with distinctive patterns (login, branch prefix, co-author trailer, and/or PR body marker), and add a test case.
 
 If you need any assistance or have further questions, feel free to ask. Happy contributing!

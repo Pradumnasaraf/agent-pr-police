@@ -24,7 +24,7 @@ inputs:
     required: false
     default: 'false'
   extra-agent-identifiers:
-    description: 'Newline-separated substrings matched against the PR author login and co-author trailers, for agents not in the built-in registry.'
+    description: 'Newline-separated substrings matched against the PR author login, branch name, and co-author trailers, for agents not in the built-in registry.'
     required: false
     default: ''
   github-token:
@@ -35,35 +35,16 @@ inputs:
 outputs:
   is-agent-pr:
     description: 'Whether the PR was detected as authored by an AI coding agent.'
-    value: ${{ steps.police.outputs.is-agent-pr }}
   agent:
     description: 'Name of the detected agent, empty if none was identified.'
-    value: ${{ steps.police.outputs.agent }}
 
 runs:
-  using: 'composite'
-  steps:
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version-file: ${{ github.action_path }}/go.mod
-        cache: false
-
-    - name: Build agent-pr-police
-      shell: bash
-      working-directory: ${{ github.action_path }}
-      run: |
-        mkdir -p "${{ github.action_path }}/bin"
-        go build -o "${{ github.action_path }}/bin/agent-pr-police" ./cmd/agent-pr-police
-
-    - name: Run agent-pr-police
-      id: police
-      shell: bash
-      env:
-        INPUT_LABEL: ${{ inputs.label }}
-        INPUT_ADD_LABEL: ${{ inputs.add-label }}
-        INPUT_COMMENT: ${{ inputs.comment }}
-        INPUT_TREAT_ALL_PRS_AS_AGENT: ${{ inputs.treat-all-prs-as-agent }}
-        INPUT_EXTRA_AGENT_IDENTIFIERS: ${{ inputs.extra-agent-identifiers }}
-        GITHUB_TOKEN: ${{ inputs.github-token }}
-      run: "${{ github.action_path }}/bin/agent-pr-police"
+  using: 'docker'
+  image: 'docker://ghcr.io/pradumnasaraf/agent-pr-police:v1'
+  env:
+    INPUT_LABEL: ${{ inputs.label }}
+    INPUT_ADD_LABEL: ${{ inputs.add-label }}
+    INPUT_COMMENT: ${{ inputs.comment }}
+    INPUT_TREAT_ALL_PRS_AS_AGENT: ${{ inputs.treat-all-prs-as-agent }}
+    INPUT_EXTRA_AGENT_IDENTIFIERS: ${{ inputs.extra-agent-identifiers }}
+    GITHUB_TOKEN: ${{ inputs.github-token }}
